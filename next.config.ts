@@ -1,7 +1,8 @@
-import type { NextConfig } from "next";
+export const runtime = "nodejs";
 
-const nextConfig: NextConfig = {
-  /* config options here */
-};
+import prisma from "@/lib/prisma";
 
-export default nextConfig;
+export async function GET() {
+  const tasks = await prisma.task.findMany();
+  return Response.json(tasks);
+}
