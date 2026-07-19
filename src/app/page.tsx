@@ -1,40 +1,55 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import DashboardContainer from "@/components/DashboardContainer";
 
-export const dynamic = "force-dynamic";
+export default function Home() {
+  const [initialTasks, setInitialTasks] = useState([]);
+  const [initialCategories, setInitialCategories] = useState([]);
+  const [error, setError] = useState("");
 
-export default async function Home() {
-  try {
-    const tasksRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/tasks`, {
-      cache: "no-store",
-      headers: { "Content-Type": "application/json" },
-    });
+  useEffect(() => {
+    async function load() {
+      try {
+        // タスク取得
+        const tasksRes = await fetch("/api/tasks", {
+          headers: { "Content-Type": "application/json" },
+        });
 
-    if (!tasksRes.ok) {
-      console.error("Failed to fetch tasks:", await tasksRes.text());
-      return <div>タスクの取得に失敗しました。</div>;
+        if (!tasksRes.ok) {
+          setError("タスクの取得に失敗しました。");
+          return;
+        }
+
+        const tasks = await tasksRes.json();
+        setInitialTasks(tasks);
+
+        // カテゴリ取得
+        const categoriesRes = await fetch("/api/categories", {
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (categoriesRes.ok) {
+          const categories = await categoriesRes.json();
+          setInitialCategories(categories);
+        }
+      } catch (err) {
+        console.error("Home page error:", err);
+        setError("ページの読み込みに失敗しました。");
+      }
     }
 
-    const initialTasks = await tasksRes.json();
+    load();
+  }, []);
 
-    const categoriesRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/categories`, {
-      cache: "no-store",
-      headers: { "Content-Type": "application/json" },
-    });
-
-    let initialCategories = [];
-    if (categoriesRes.ok) {
-      initialCategories = await categoriesRes.json();
-    }
-
-    return (
-      <DashboardContainer
-        initialTasks={initialTasks}
-        initialCategories={initialCategories}
-      />
-    );
-  } catch (error) {
-    console.error("Home page error:", error);
-    return <div>ページの読み込みに失敗しました。</div>;
+  if (error) {
+    return <div>{error}</div>;
   }
+
+  return (
+    <DashboardContainer
+      initialTasks={initialTasks}
+      initialCategories={initialCategories}
+    />
+  );
 }
