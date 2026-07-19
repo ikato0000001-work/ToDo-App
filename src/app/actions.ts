@@ -5,7 +5,6 @@ import prisma from "@/lib/prisma";
 import { Priority, Task, Subtask } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
-
 export type TaskWithSubtasks = Task & {
   subtasks: Subtask[];
 };
@@ -55,7 +54,6 @@ export async function getTasks(filters?: {
     orderBy,
   }) as TaskWithSubtasks[];
 
-  // Custom priority sorting: HIGH -> MEDIUM -> LOW
   if (sortBy && sortBy.startsWith("priority")) {
     const isDesc = sortBy.endsWith("desc");
     const priorityWeight: Record<Priority, number> = { HIGH: 3, MEDIUM: 2, LOW: 1 };
