@@ -1,5 +1,5 @@
-export const runtime = "nodejs";
 "use server";
+export const runtime = "nodejs";
 
 import prisma from "@/lib/prisma";
 import { Priority, Task, Subtask } from "@prisma/client";
