@@ -7,7 +7,7 @@ import { TaskWithSubtasks } from "@/types/task";
 interface TaskCardProps {
   task: TaskWithSubtasks;
   onEdit: (task: TaskWithSubtasks) => void;
-  onChange: () => void; // ★ 親へ通知
+  onChange: () => void;
 }
 
 export default function TaskCard({ task, onEdit, onChange }: TaskCardProps) {
@@ -32,7 +32,7 @@ export default function TaskCard({ task, onEdit, onChange }: TaskCardProps) {
     try {
       await fetch(`${BASE}/api/tasks/${task.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" }, // ★ 追加
+        headers: { "Content-Type": "application/json" }, // ★ 必須
         body: JSON.stringify({ completed: !task.completed }),
       });
       onChange();
@@ -47,7 +47,7 @@ export default function TaskCard({ task, onEdit, onChange }: TaskCardProps) {
     try {
       await fetch(`${BASE}/api/tasks/${task.id}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" }, // ★ 追加
+        headers: { "Content-Type": "application/json" }, // ★ 必須
       });
       onChange();
     } catch (error) {
@@ -63,7 +63,7 @@ export default function TaskCard({ task, onEdit, onChange }: TaskCardProps) {
     try {
       await fetch(`${BASE}/api/subtasks`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" }, // ★ 追加
+        headers: { "Content-Type": "application/json" }, // ★ 必須
         body: JSON.stringify({
           taskId: task.id,
           title: newSubtaskTitle.trim(),
@@ -82,7 +82,7 @@ export default function TaskCard({ task, onEdit, onChange }: TaskCardProps) {
     try {
       await fetch(`${BASE}/api/subtasks/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" }, // ★ 追加
+        headers: { "Content-Type": "application/json" }, // ★ 必須
         body: JSON.stringify({ completed: !currentCompleted }),
       });
       onChange();
@@ -95,7 +95,7 @@ export default function TaskCard({ task, onEdit, onChange }: TaskCardProps) {
     try {
       await fetch(`${BASE}/api/subtasks/${id}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" }, // ★ 追加
+        headers: { "Content-Type": "application/json" }, // ★ 必須
       });
       onChange();
     } catch (error) {
