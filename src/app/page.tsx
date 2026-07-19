@@ -1,12 +1,18 @@
 import React from "react";
 import DashboardContainer from "@/components/DashboardContainer";
-import { getTasks, getCategories } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const initialTasks = await getTasks();
-  const initialCategories = await getCategories();
+  const tasksRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/tasks`, {
+    cache: "no-store",
+  });
+  const initialTasks = await tasksRes.json();
+
+  const categoriesRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/categories`, {
+    cache: "no-store",
+  });
+  const initialCategories = await categoriesRes.json();
 
   return (
     <DashboardContainer

@@ -6,7 +6,7 @@ import StatsCard from "./StatsCard";
 import Filters from "./Filters";
 import TaskList from "./TaskList";
 import TaskModal from "./TaskModal";
-import { TaskWithSubtasks } from "@/app/actions";
+import { TaskWithSubtasks } from "@/types/task";
 
 interface DashboardContainerProps {
   initialTasks: TaskWithSubtasks[];
