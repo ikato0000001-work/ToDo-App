@@ -7,12 +7,15 @@ import { TaskWithSubtasks } from "@/types/task";
 interface TaskCardProps {
   task: TaskWithSubtasks;
   onEdit: (task: TaskWithSubtasks) => void;
+  onChange: () => void; // ★ 親へ通知
 }
 
-export default function TaskCard({ task, onEdit }: TaskCardProps) {
+export default function TaskCard({ task, onEdit, onChange }: TaskCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
+
+  const BASE = process.env.NEXT_PUBLIC_BASE_URL;
 
   const completedSubtasks = task.subtasks.filter((s) => s.completed).length;
   const totalSubtasks = task.subtasks.length;
@@ -22,37 +25,34 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
       : 0;
 
   // -----------------------------
-  // API Route 呼び出しに完全移行
+  // API Route 呼び出し（UI更新は親に任せる）
   // -----------------------------
 
-  const BASE = process.env.NEXT_PUBLIC_BASE_URL;
-
-  // Toggle main task completion status
   const handleToggleComplete = async () => {
     try {
       await fetch(`${BASE}/api/tasks/${task.id}`, {
         method: "PUT",
         body: JSON.stringify({ completed: !task.completed }),
       });
+      onChange(); // ★ 親へ通知
     } catch (error) {
       console.error("Failed to toggle task:", error);
     }
   };
 
-  // Delete main task
   const handleDeleteTask = async () => {
-    if (confirm("このタスクを削除してもよろしいですか？")) {
-      try {
-        await fetch(`${BASE}/api/tasks/${task.id}`, {
-          method: "DELETE",
-        });
-      } catch (error) {
-        console.error("Failed to delete task:", error);
-      }
+    if (!confirm("このタスクを削除してもよろしいですか？")) return;
+
+    try {
+      await fetch(`${BASE}/api/tasks/${task.id}`, {
+        method: "DELETE",
+      });
+      onChange(); // ★ 親へ通知
+    } catch (error) {
+      console.error("Failed to delete task:", error);
     }
   };
 
-  // Add a subtask
   const handleAddSubtask = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSubtaskTitle.trim() || isAddingSubtask) return;
@@ -67,6 +67,7 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
         }),
       });
       setNewSubtaskTitle("");
+      onChange(); // ★ 親へ通知
     } catch (error) {
       console.error("Failed to add subtask:", error);
     } finally {
@@ -74,30 +75,33 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
     }
   };
 
-  // Toggle subtask status
   const handleToggleSubtask = async (id: number, currentCompleted: boolean) => {
     try {
       await fetch(`${BASE}/api/subtasks/${id}`, {
         method: "PUT",
         body: JSON.stringify({ completed: !currentCompleted }),
       });
+      onChange(); // ★ 親へ通知
     } catch (error) {
       console.error("Failed to toggle subtask:", error);
     }
   };
 
-  // Delete a subtask
   const handleDeleteSubtask = async (id: number) => {
     try {
       await fetch(`${BASE}/api/subtasks/${id}`, {
         method: "DELETE",
       });
+      onChange(); // ★ 親へ通知
     } catch (error) {
       console.error("Failed to delete subtask:", error);
     }
   };
 
-  // Format due date and check if overdue
+  // -----------------------------
+  // 日付処理
+  // -----------------------------
+
   const formatDate = (dateString: Date | null) => {
     if (!dateString) return null;
     const date = new Date(dateString);
@@ -112,10 +116,13 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
         new Date().setHours(0, 0, 0, 0) && !task.completed
     : false;
 
+  // -----------------------------
+  // UI
+  // -----------------------------
+
   return (
     <div className={`${styles.card} ${styles[`priority_${task.priority}`]}`}>
       <div className={styles.header}>
-        {/* Checkbox */}
         <label className={styles.checkboxContainer}>
           <input
             type="checkbox"
@@ -125,7 +132,6 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
           <span className={styles.checkmark} />
         </label>
 
-        {/* Title and Meta */}
         <div className={styles.titleArea}>
           <h3
             className={`${styles.title} ${
@@ -134,6 +140,7 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
           >
             {task.title}
           </h3>
+
           <div className={styles.metaRow}>
             <span className={styles.categoryBadge}>{task.category}</span>
 
@@ -156,7 +163,6 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className={styles.actions}>
           <button
             className={styles.actionButton}
@@ -175,7 +181,6 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
         </div>
       </div>
 
-      {/* Toggle Details Button */}
       {(task.description || totalSubtasks >= 0) && (
         <button
           className={styles.expandButton}
@@ -185,14 +190,12 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
         </button>
       )}
 
-      {/* Expanded Body */}
       {isExpanded && (
         <div className={styles.body}>
           {task.description && (
             <p className={styles.description}>{task.description}</p>
           )}
 
-          {/* Subtasks Section */}
           <div className={styles.subtasksSection}>
             <div className={styles.subtasksHeader}>
               <span>チェックリスト</span>
@@ -230,7 +233,6 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
               </div>
             )}
 
-            {/* Add Subtask Form */}
             <form onSubmit={handleAddSubtask} className={styles.subtaskForm}>
               <input
                 type="text"

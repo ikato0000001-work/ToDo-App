@@ -17,7 +17,7 @@ export default function DashboardContainer({
   initialTasks,
   initialCategories,
 }: DashboardContainerProps) {
-  const [tasks] = useState<TaskWithSubtasks[]>(initialTasks);
+  const [tasks, setTasks] = useState<TaskWithSubtasks[]>(initialTasks);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [priority, setPriority] = useState("All");
@@ -25,17 +25,21 @@ export default function DashboardContainer({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskWithSubtasks | null>(null);
 
-  // We actually want to use the hot revalidated props tasks directly so that Server Actions update the UI!
-  // In Next.js, when server actions call revalidatePath, the page component re-renders with new database data.
-  // By using initialTasks directly (which updates when page re-renders), the UI automatically updates!
-  const currentTasks = initialTasks;
+  const BASE = process.env.NEXT_PUBLIC_BASE_URL;
 
-  // Dynamically extract categories from current tasks to keep it updated
+  // ★ TaskCard から呼ばれる「最新タスク再フェッチ」
+  const refreshTasks = async () => {
+    const res = await fetch(`${BASE}/api/tasks`, { cache: "no-store" });
+    const updated = await res.json();
+    setTasks(updated);
+  };
+
+  const currentTasks = tasks;
+
   const categoriesList = Array.from(
     new Set([...initialCategories, ...currentTasks.map((t) => t.category)])
   ).filter(Boolean);
 
-  // Filter tasks
   const filteredTasks = currentTasks.filter((task) => {
     const matchesSearch =
       task.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -46,31 +50,30 @@ export default function DashboardContainer({
     return matchesSearch && matchesCategory && matchesPriority;
   });
 
-  // Sort tasks
   const sortedTasks = [...filteredTasks].sort((a, b) => {
     const [field, direction] = sortBy.split("_");
     const isDesc = direction === "desc";
 
     if (field === "createdAt") {
-      const timeA = new Date(a.createdAt).getTime();
-      const timeB = new Date(b.createdAt).getTime();
-      return isDesc ? timeB - timeA : timeA - timeB;
+      return isDesc
+        ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
     }
 
     if (field === "dueDate") {
       if (!a.dueDate && !b.dueDate) return 0;
-      if (!a.dueDate) return 1; // Put tasks without due date at the end
+      if (!a.dueDate) return 1;
       if (!b.dueDate) return -1;
-      const timeA = new Date(a.dueDate).getTime();
-      const timeB = new Date(b.dueDate).getTime();
-      return isDesc ? timeB - timeA : timeA - timeB;
+      return isDesc
+        ? new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()
+        : new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
     }
 
     if (field === "priority") {
       const weights = { HIGH: 3, MEDIUM: 2, LOW: 1 };
-      const weightA = weights[a.priority] || 0;
-      const weightB = weights[b.priority] || 0;
-      return isDesc ? weightB - weightA : weightA - weightB;
+      return isDesc
+        ? weights[b.priority] - weights[a.priority]
+        : weights[a.priority] - weights[b.priority];
     }
 
     return 0;
@@ -89,6 +92,7 @@ export default function DashboardContainer({
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingTask(null);
+    refreshTasks(); // ★ モーダル閉じたら最新化
   };
 
   const handleClearFilters = () => {
@@ -106,20 +110,7 @@ export default function DashboardContainer({
           <p>クリーンなグラスモーフィズムデザインのタスク管理ダッシュボード</p>
         </div>
         <button className={styles.addButton} onClick={handleCreateClick}>
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M5 12h14" />
-            <path d="M12 5v14" />
-          </svg>
-          タスクを追加
+          ＋ タスクを追加
         </button>
       </header>
 
@@ -141,13 +132,20 @@ export default function DashboardContainer({
 
         <main className={styles.mainPanel}>
           {sortedTasks.length > 0 ? (
-            <TaskList tasks={sortedTasks} onEdit={handleEditClick} />
+            <TaskList
+              tasks={sortedTasks}
+              onEdit={handleEditClick}
+              onChange={refreshTasks} // ★ TaskCard と連携
+            />
           ) : (
             <div className={styles.noTasks}>
               <h3>該当するタスクが見つかりません</h3>
               <p>検索条件やフィルターを変更するか、新しいタスクを追加してください。</p>
               {(search || category !== "All" || priority !== "All") && (
-                <button className={styles.clearFilterBtn} onClick={handleClearFilters}>
+                <button
+                  className={styles.clearFilterBtn}
+                  onClick={handleClearFilters}
+                >
                   フィルターをリセット
                 </button>
               )}

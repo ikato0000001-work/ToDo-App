@@ -7,13 +7,19 @@ import { TaskWithSubtasks } from "@/types/task";
 interface TaskListProps {
   tasks: TaskWithSubtasks[];
   onEdit: (task: TaskWithSubtasks) => void;
+  onChange: () => void; // ★ 追加
 }
 
-export default function TaskList({ tasks, onEdit }: TaskListProps) {
+export default function TaskList({ tasks, onEdit, onChange }: TaskListProps) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+    <div>
       {tasks.map((task) => (
-        <TaskCard key={task.id} task={task} onEdit={onEdit} />
+        <TaskCard
+          key={task.id}
+          task={task}
+          onEdit={onEdit}
+          onChange={onChange} // ★ TaskCard に渡す
+        />
       ))}
     </div>
   );
