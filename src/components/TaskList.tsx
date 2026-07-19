@@ -2,7 +2,7 @@
 
 import React from "react";
 import TaskCard from "./TaskCard";
-import { TaskWithSubtasks } from "@/app/actions";
+import { TaskWithSubtasks } from "@/types/task";
 
 interface TaskListProps {
   tasks: TaskWithSubtasks[];

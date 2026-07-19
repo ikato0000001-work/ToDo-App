@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "./TaskModal.module.css";
-import { createTask, updateTask, TaskWithSubtasks } from "@/app/actions";
+import { TaskWithSubtasks } from "@/types/task";
 import { Priority } from "@prisma/client";
 
 interface TaskModalProps {
-  task: TaskWithSubtasks | null; // Null means we are creating a new task
+  task: TaskWithSubtasks | null;
   onClose: () => void;
   categories: string[];
 }
@@ -19,14 +19,16 @@ export default function TaskModal({ task, onClose, categories }: TaskModalProps)
   const [dueDate, setDueDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const BASE = process.env.NEXT_PUBLIC_BASE_URL;
+
   useEffect(() => {
     if (task) {
       setTitle(task.title);
       setDescription(task.description || "");
       setPriority(task.priority);
       setCategory(task.category);
+
       if (task.dueDate) {
-        // Convert Date to YYYY-MM-DD for input[type="date"]
         const date = new Date(task.dueDate);
         const yyyy = date.getFullYear();
         const mm = String(date.getMonth() + 1).padStart(2, "0");
@@ -49,6 +51,7 @@ export default function TaskModal({ task, onClose, categories }: TaskModalProps)
     if (!title.trim() || isSubmitting) return;
 
     setIsSubmitting(true);
+
     try {
       const payload = {
         title: title.trim(),
@@ -59,10 +62,19 @@ export default function TaskModal({ task, onClose, categories }: TaskModalProps)
       };
 
       if (task) {
-        await updateTask(task.id, payload);
+        // UPDATE
+        await fetch(`${BASE}/api/tasks/${task.id}`, {
+          method: "PUT",
+          body: JSON.stringify(payload),
+        });
       } else {
-        await createTask(payload);
+        // CREATE
+        await fetch(`${BASE}/api/tasks`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
       }
+
       onClose();
     } catch (error) {
       console.error("Failed to save task:", error);
@@ -84,9 +96,7 @@ export default function TaskModal({ task, onClose, categories }: TaskModalProps)
         <form onSubmit={handleSubmit} className={styles.form}>
           {/* Title */}
           <div className={styles.formGroup}>
-            <label className={styles.label} htmlFor="title">
-              タイトル
-            </label>
+            <label className={styles.label} htmlFor="title">タイトル</label>
             <input
               type="text"
               id="title"
@@ -101,9 +111,7 @@ export default function TaskModal({ task, onClose, categories }: TaskModalProps)
 
           {/* Description */}
           <div className={styles.formGroup}>
-            <label className={styles.label} htmlFor="description">
-              説明
-            </label>
+            <label className={styles.label} htmlFor="description">説明</label>
             <textarea
               id="description"
               className={`${styles.input} ${styles.textarea}`}
@@ -117,9 +125,7 @@ export default function TaskModal({ task, onClose, categories }: TaskModalProps)
           <div className={styles.row}>
             {/* Priority */}
             <div className={styles.formGroup}>
-              <label className={styles.label} htmlFor="priority">
-                優先度
-              </label>
+              <label className={styles.label} htmlFor="priority">優先度</label>
               <select
                 id="priority"
                 className={styles.input}
@@ -134,9 +140,7 @@ export default function TaskModal({ task, onClose, categories }: TaskModalProps)
 
             {/* Category */}
             <div className={styles.formGroup}>
-              <label className={styles.label} htmlFor="category">
-                カテゴリー
-              </label>
+              <label className={styles.label} htmlFor="category">カテゴリー</label>
               <input
                 type="text"
                 id="category"
@@ -156,9 +160,7 @@ export default function TaskModal({ task, onClose, categories }: TaskModalProps)
 
           {/* Due Date */}
           <div className={styles.formGroup}>
-            <label className={styles.label} htmlFor="dueDate">
-              期限日
-            </label>
+            <label className={styles.label} htmlFor="dueDate">期限日</label>
             <input
               type="date"
               id="dueDate"

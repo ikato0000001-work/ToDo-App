@@ -2,7 +2,7 @@
 
 import React from "react";
 import styles from "./StatsCard.module.css";
-import { TaskWithSubtasks } from "@/app/actions";
+import { TaskWithSubtasks } from "@/types/task";
 
 interface StatsCardProps {
   tasks: TaskWithSubtasks[];
