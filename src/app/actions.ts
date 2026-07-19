@@ -1,10 +1,10 @@
+export const runtime = "nodejs";
 "use server";
 
 import prisma from "@/lib/prisma";
 import { Priority, Task, Subtask } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
-export const runtime = "nodejs";
 
 export type TaskWithSubtasks = Task & {
   subtasks: Subtask[];
