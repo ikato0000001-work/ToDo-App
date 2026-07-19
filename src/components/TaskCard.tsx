@@ -32,9 +32,10 @@ export default function TaskCard({ task, onEdit, onChange }: TaskCardProps) {
     try {
       await fetch(`${BASE}/api/tasks/${task.id}`, {
         method: "PUT",
+        headers: { "Content-Type": "application/json" }, // ★ 追加
         body: JSON.stringify({ completed: !task.completed }),
       });
-      onChange(); // ★ 親へ通知
+      onChange();
     } catch (error) {
       console.error("Failed to toggle task:", error);
     }
@@ -46,8 +47,9 @@ export default function TaskCard({ task, onEdit, onChange }: TaskCardProps) {
     try {
       await fetch(`${BASE}/api/tasks/${task.id}`, {
         method: "DELETE",
+        headers: { "Content-Type": "application/json" }, // ★ 追加
       });
-      onChange(); // ★ 親へ通知
+      onChange();
     } catch (error) {
       console.error("Failed to delete task:", error);
     }
@@ -61,13 +63,14 @@ export default function TaskCard({ task, onEdit, onChange }: TaskCardProps) {
     try {
       await fetch(`${BASE}/api/subtasks`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" }, // ★ 追加
         body: JSON.stringify({
           taskId: task.id,
           title: newSubtaskTitle.trim(),
         }),
       });
       setNewSubtaskTitle("");
-      onChange(); // ★ 親へ通知
+      onChange();
     } catch (error) {
       console.error("Failed to add subtask:", error);
     } finally {
@@ -79,9 +82,10 @@ export default function TaskCard({ task, onEdit, onChange }: TaskCardProps) {
     try {
       await fetch(`${BASE}/api/subtasks/${id}`, {
         method: "PUT",
+        headers: { "Content-Type": "application/json" }, // ★ 追加
         body: JSON.stringify({ completed: !currentCompleted }),
       });
-      onChange(); // ★ 親へ通知
+      onChange();
     } catch (error) {
       console.error("Failed to toggle subtask:", error);
     }
@@ -91,8 +95,9 @@ export default function TaskCard({ task, onEdit, onChange }: TaskCardProps) {
     try {
       await fetch(`${BASE}/api/subtasks/${id}`, {
         method: "DELETE",
+        headers: { "Content-Type": "application/json" }, // ★ 追加
       });
-      onChange(); // ★ 親へ通知
+      onChange();
     } catch (error) {
       console.error("Failed to delete subtask:", error);
     }
