@@ -3,10 +3,13 @@ export const runtime = "nodejs";
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
 
-export async function PUT(req: NextRequest, context: { params: { id: string } }) {
+export async function PUT(
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
-    const { id } = context.params;
-    const { completed } = await req.json(); // ★ Content-Type が無いと落ちる → fetch 側で必ず付ける
+    const { id } = await context.params;
+    const { completed } = await req.json();
 
     const subtask = await prisma.subtask.update({
       where: { id: Number(id) },
@@ -20,9 +23,12 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
   }
 }
 
-export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
+export async function DELETE(
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
 
     await prisma.subtask.delete({
       where: { id: Number(id) },
