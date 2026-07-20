@@ -19,7 +19,8 @@ export default function TaskModal({ task, onClose, categories }: TaskModalProps)
   const [dueDate, setDueDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const BASE = process.env.NEXT_PUBLIC_BASE_URL;
+  // ★ BASE を削除（これが正しい）
+  // const BASE = process.env.NEXT_PUBLIC_BASE_URL;
 
   useEffect(() => {
     if (task) {
@@ -63,14 +64,16 @@ export default function TaskModal({ task, onClose, categories }: TaskModalProps)
 
       if (task) {
         // UPDATE
-        await fetch(`${BASE}/api/tasks/${task.id}`, {
+        await fetch(`/api/tasks/${task.id}`, {
           method: "PUT",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
       } else {
         // CREATE
-        await fetch(`${BASE}/api/tasks`, {
+        await fetch(`/api/tasks`, {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
       }

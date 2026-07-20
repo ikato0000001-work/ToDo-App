@@ -25,11 +25,9 @@ export default function DashboardContainer({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskWithSubtasks | null>(null);
 
-  const BASE = process.env.NEXT_PUBLIC_BASE_URL;
-
-  // ★ TaskCard から呼ばれる「最新タスク再フェッチ」
+  // ★ BASE を使わない（これが正しい）
   const refreshTasks = async () => {
-    const res = await fetch(`${BASE}/api/tasks`, { cache: "no-store" });
+    const res = await fetch("/api/tasks", { cache: "no-store" });
     const updated = await res.json();
     setTasks(updated);
   };

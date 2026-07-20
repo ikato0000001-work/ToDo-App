@@ -15,7 +15,8 @@ export default function TaskCard({ task, onEdit, onChange }: TaskCardProps) {
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
 
-  const BASE = process.env.NEXT_PUBLIC_BASE_URL;
+  // ★ BASE を削除（これが正しい）
+  // const BASE = process.env.NEXT_PUBLIC_BASE_URL;
 
   const completedSubtasks = task.subtasks.filter((s) => s.completed).length;
   const totalSubtasks = task.subtasks.length;
@@ -25,14 +26,14 @@ export default function TaskCard({ task, onEdit, onChange }: TaskCardProps) {
       : 0;
 
   // -----------------------------
-  // API Route 呼び出し（UI更新は親に任せる）
+  // API Route 呼び出し（相対パスに統一）
   // -----------------------------
 
   const handleToggleComplete = async () => {
     try {
-      await fetch(`${BASE}/api/tasks/${task.id}`, {
+      await fetch(`/api/tasks/${task.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" }, // ★ 必須
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ completed: !task.completed }),
       });
       onChange();
@@ -45,9 +46,9 @@ export default function TaskCard({ task, onEdit, onChange }: TaskCardProps) {
     if (!confirm("このタスクを削除してもよろしいですか？")) return;
 
     try {
-      await fetch(`${BASE}/api/tasks/${task.id}`, {
+      await fetch(`/api/tasks/${task.id}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" }, // ★ 必須
+        headers: { "Content-Type": "application/json" },
       });
       onChange();
     } catch (error) {
@@ -61,9 +62,9 @@ export default function TaskCard({ task, onEdit, onChange }: TaskCardProps) {
 
     setIsAddingSubtask(true);
     try {
-      await fetch(`${BASE}/api/subtasks`, {
+      await fetch(`/api/subtasks`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" }, // ★ 必須
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           taskId: task.id,
           title: newSubtaskTitle.trim(),
@@ -80,9 +81,9 @@ export default function TaskCard({ task, onEdit, onChange }: TaskCardProps) {
 
   const handleToggleSubtask = async (id: number, currentCompleted: boolean) => {
     try {
-      await fetch(`${BASE}/api/subtasks/${id}`, {
+      await fetch(`/api/subtasks/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" }, // ★ 必須
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ completed: !currentCompleted }),
       });
       onChange();
@@ -93,9 +94,9 @@ export default function TaskCard({ task, onEdit, onChange }: TaskCardProps) {
 
   const handleDeleteSubtask = async (id: number) => {
     try {
-      await fetch(`${BASE}/api/subtasks/${id}`, {
+      await fetch(`/api/subtasks/${id}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" }, // ★ 必須
+        headers: { "Content-Type": "application/json" },
       });
       onChange();
     } catch (error) {
