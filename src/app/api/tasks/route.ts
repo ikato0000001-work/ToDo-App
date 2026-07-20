@@ -3,6 +3,8 @@ export const runtime = "nodejs";
 import prisma from "@/lib/prisma";
 
 export async function GET() {
+  console.log("API /api/tasks called");
+
   try {
     const tasks = await prisma.task.findMany({
       include: {
@@ -13,6 +15,7 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
+    console.log("tasks:", tasks);
     return Response.json(tasks);
   } catch (error) {
     console.error("GET /api/tasks error:", error);

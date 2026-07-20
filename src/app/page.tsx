@@ -15,7 +15,7 @@ export default function Home() {
         const tasksRes = await fetch("/api/tasks", {
           headers: { "Content-Type": "application/json" },
         });
-console.log("tasksRes:", tasksRes);
+
         if (!tasksRes.ok) {
           setError("タスクの取得に失敗しました。");
           return;
