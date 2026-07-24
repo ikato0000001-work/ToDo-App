@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./Dashboard.module.css";
 import StatsCard from "./StatsCard";
 import Filters from "./Filters";
@@ -25,12 +25,20 @@ export default function DashboardContainer({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskWithSubtasks | null>(null);
 
-  // ★ BASE を使わない（これが正しい）
+  // ★ BASE 削除
+  // const BASE = process.env.NEXT_PUBLIC_BASE_URL;
+
+  // ★ 最新タスク再取得
   const refreshTasks = async () => {
     const res = await fetch("/api/tasks", { cache: "no-store" });
     const updated = await res.json();
     setTasks(updated);
   };
+
+  // ★ 初回ロード時にも最新化
+  useEffect(() => {
+    refreshTasks();
+  }, []);
 
   const currentTasks = tasks;
 
@@ -133,7 +141,7 @@ export default function DashboardContainer({
             <TaskList
               tasks={sortedTasks}
               onEdit={handleEditClick}
-              onChange={refreshTasks} // ★ TaskCard と連携
+              onChange={refreshTasks}
             />
           ) : (
             <div className={styles.noTasks}>

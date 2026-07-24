@@ -11,8 +11,9 @@ export default function Home() {
   useEffect(() => {
     async function load() {
       try {
-        // タスク取得
+        // タスク取得（★キャッシュ禁止）
         const tasksRes = await fetch("/api/tasks", {
+          cache: "no-store",
           headers: { "Content-Type": "application/json" },
         });
 
@@ -24,8 +25,9 @@ export default function Home() {
         const tasks = await tasksRes.json();
         setInitialTasks(tasks);
 
-        // カテゴリ取得
+        // カテゴリ取得（★キャッシュ禁止）
         const categoriesRes = await fetch("/api/categories", {
+          cache: "no-store",
           headers: { "Content-Type": "application/json" },
         });
 
